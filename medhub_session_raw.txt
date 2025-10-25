@@ -1,0 +1,185 @@
+(base) ➜  medhub-lite git:(main) ✗ python cli.py
+
+============================================================
+  MedHub Lite - Medical Document Q&A System
+  Type 'help' for commands, 'quit' to exit
+============================================================
+
+Initializing system...
+Created new collection: medical_documents
+MedHub Lite Q&A System initialized
+Vector store stats: {'total_chunks': 0, 'collection_name': 'medical_documents'}
+System ready!
+
+medhub> add data/sample_documents/sample_medical_record.txt
+
+Processing document: data/sample_documents/sample_medical_record.txt
+Loaded document: sample_medical_record
+Document type: discharge_summary
+Created 1 chunks
+Adding 1 chunks to vector store...
+Generating embeddings...
+Error generating embeddings batch: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+Error adding document: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+
+medhub> add data/sample_documents/sample_medical_record.txt
+
+Processing document: data/sample_documents/sample_medical_record.txt
+Loaded document: sample_medical_record
+Document type: discharge_summary
+Created 1 chunks
+Adding 1 chunks to vector store...
+Generating embeddings...
+Successfully added 1 chunks
+Extracted entities: 14 total
+
+✓ Document added successfully!
+  ID: sample_medical_record
+  Type: discharge_summary
+  Chunks: 1
+
+medhub> ask What are the patient's work restrictions?
+
+Question: What are the patient's work restrictions?
+Retrieving relevant documents...
+Number of requested results 5 is greater than number of elements in index 1, updating n_results = 1
+Found 1 relevant chunks
+Generating answer...
+
+📝 Answer:
+The patient's work restrictions, as per the most recent medical document, are as follows:
+
+1. The patient can lift up to 20 pounds (increased from the previous restriction of 10 pounds)
+2. The patient should avoid prolonged standing
+3. The patient should gradually increase activity as tolerated
+
+These restrictions were provided during the follow-up visit on 04/12/2024 (Source 1: sample_medical_record.txt - discharge_summary). The document does not mention any restrictions on bending, twisting, or stooping, or whether the patient is still limited to sedentary work, as was the case in the initial discharge summary. The patient is scheduled for re-evaluation in 4 weeks.
+
+📚 Sources (1):
+  1. sample_medical_record.txt (discharge_summary)
+
+🎯 Confidence: medium
+
+medhub> ask What medications is the patient taking?
+
+Question: What medications is the patient taking?
+Retrieving relevant documents...
+Number of requested results 5 is greater than number of elements in index 1, updating n_results = 1
+Found 1 relevant chunks
+Generating answer...
+
+📝 Answer:
+The patient is currently taking the following medications:
+
+1. Metformin 1000mg twice daily
+2. Lisinopril 10mg once daily
+3. Ibuprofen 600mg as needed for pain
+4. Gabapentin 300mg three times daily
+5. Cyclobenzaprine 10mg at bedtime
+
+These medications are listed in the "CURRENT MEDICATIONS" section of the discharge summary in Source 1: sample_medical_record.txt. The addition of Cyclobenzaprine is mentioned in the "TREATMENT PLAN" section of the same document. The continuation of these medications is confirmed in the "PLAN" section of the follow-up visit note in the same source.
+
+📚 Sources (1):
+  1. sample_medical_record.txt (discharge_summary)
+
+🎯 Confidence: medium
+
+medhub> ask What is the primary diagnosis?
+
+Question: What is the primary diagnosis?
+Retrieving relevant documents...
+Number of requested results 5 is greater than number of elements in index 1, updating n_results = 1
+Found 1 relevant chunks
+Generating answer...
+
+📝 Answer:
+The primary diagnosis for the patient, John Doe, is acute lumbar radiculopathy secondary to L4-L5 disc herniation. This is stated in the "ASSESSMENT AND PLAN" section of the discharge summary in Source 1: sample_medical_record.txt - discharge_summary.
+
+📚 Sources (1):
+  1. sample_medical_record.txt (discharge_summary)
+
+🎯 Confidence: medium
+
+medhub> ask How did the patient's condition improve at follow-up?
+
+Question: How did the patient's condition improve at follow-up?
+Retrieving relevant documents...
+Number of requested results 5 is greater than number of elements in index 1, updating n_results = 1
+Found 1 relevant chunks
+Generating answer...
+
+📝 Answer:
+The patient's condition improved at the follow-up visit in several ways, as noted in the progress note from the follow-up visit on 04/12/2024. 
+
+1. Pain: The patient reported a 40% improvement in pain over the past 4 weeks. The pain was now rated as 4/10 at rest and 6/10 with activity, compared to the initial 7/10 at rest and 9/10 with movement (Source 1: sample_medical_record.txt - discharge_summary).
+
+2. Numbness: The patient reported that the numbness in his left foot had decreased (Source 1: sample_medical_record.txt - discharge_summary).
+
+3. Physical Examination: The patient showed an improved range of motion in the lumbar spine. The straight leg raise test was positive on the left at 60 degrees, which was an improvement from the initial 45 degrees. The strength in the left ankle dorsiflexion also improved to 4+/5 from the initial 4/5 (Source 1: sample_medical_record.txt - discharge_summary).
+
+4. Work Restrictions: The patient's work restrictions were modified. He could now lift up to 20 pounds, although he was still restricted from prolonged standing (Source 1: sample_medical_record.txt - discharge_summary).
+
+Overall, the patient's lumbar radiculopathy was improving and responding to conservative management (Source 1: sample_medical_record.txt - discharge_summary).
+
+📚 Sources (1):
+  1. sample_medical_record.txt (discharge_summary)
+
+🎯 Confidence: medium
+
+medhub> ask What caused the injury?
+
+Question: What caused the injury?
+Retrieving relevant documents...
+Number of requested results 5 is greater than number of elements in index 1, updating n_results = 1
+Found 1 relevant chunks
+Generating answer...
+
+📝 Answer:
+The injury was caused by lifting heavy materials at work. This is stated in the "History of Present Illness" section of the discharge summary from Source 1, which notes that Mr. Doe, a construction worker, experienced an acute onset of lower back pain approximately three weeks ago while lifting heavy materials at his job.
+
+📚 Sources (1):
+  1. sample_medical_record.txt (discharge_summary)
+
+🎯 Confidence: medium
+
+medhub> ask When is the next follow-up appointment?
+
+Question: When is the next follow-up appointment?
+Retrieving relevant documents...
+Number of requested results 5 is greater than number of elements in index 1, updating n_results = 1
+Found 1 relevant chunks
+Generating answer...
+
+📝 Answer:
+The next follow-up appointment is scheduled for 4 weeks after the most recent visit on 04/12/2024. However, the exact date is not specified in the documents provided. (Source 1: sample_medical_record.txt - discharge_summary, PROGRESS NOTE - FOLLOW-UP VISIT)
+
+📚 Sources (1):
+  1. sample_medical_record.txt (discharge_summary)
+
+🎯 Confidence: medium
+
+medhub> ask What are the risks if conservative treatment fails?
+
+Question: What are the risks if conservative treatment fails?
+Retrieving relevant documents...
+Number of requested results 5 is greater than number of elements in index 1, updating n_results = 1
+Found 1 relevant chunks
+Generating answer...
+
+📝 Answer:
+If conservative treatment fails for Mr. Doe's acute lumbar radiculopathy secondary to L4-L5 disc herniation, the risks could include continued or worsening pain, numbness, and weakness in the affected areas. This could further limit his ability to work and perform daily activities. Additionally, failure of conservative treatment may necessitate more invasive interventions such as an epidural steroid injection or surgical intervention. These interventions come with their own risks, including potential complications from the procedures themselves (Source 1: sample_medical_record.txt - discharge_summary). However, the specific risks associated with these interventions are not detailed in the provided documents.
+
+📚 Sources (1):
+  1. sample_medical_record.txt (discharge_summary)
+
+🎯 Confidence: medium
+
+medhub> stats
+
+📊 System Statistics:
+  Total chunks: 1
+  Collection: medical_documents
+
+medhub> exit
+medhub> 
+Goodbye!
