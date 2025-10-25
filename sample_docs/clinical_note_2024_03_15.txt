@@ -1,0 +1,73 @@
+PATIENT CLINICAL NOTE
+
+Patient Name: John Doe
+Date of Visit: March 15, 2024
+Provider: Dr. Sarah Johnson, MD
+
+CHIEF COMPLAINT:
+Patient presents with persistent lower back pain and difficulty performing work duties.
+
+HISTORY OF PRESENT ILLNESS:
+Mr. Doe is a 45-year-old male who injured his lower back on February 1, 2024, while lifting heavy boxes at his workplace. He reports sharp pain in the lumbar region (L4-L5 area) that radiates down his left leg. Pain is worse with prolonged standing, bending, and lifting. He rates pain as 7/10 at worst, 4/10 at rest.
+
+Patient reports he has been unable to work since the injury. He tried over-the-counter ibuprofen with minimal relief. Physical therapy was initiated on February 15, 2024.
+
+PAST MEDICAL HISTORY:
+- Hypertension (diagnosed 2018)
+- Type 2 Diabetes Mellitus (diagnosed 2020)
+- No prior back injuries
+
+MEDICATIONS:
+1. Lisinopril 10mg once daily (for hypertension)
+2. Metformin 1000mg twice daily (for diabetes)
+3. Ibuprofen 600mg as needed (for pain - recently added)
+
+ALLERGIES:
+- Penicillin (causes rash)
+
+PHYSICAL EXAMINATION:
+Vitals: BP 138/88, HR 76, Temp 98.6°F, RR 16
+General: Alert and oriented, appears uncomfortable when moving
+Back: Tenderness to palpation over L4-L5 region, positive straight leg raise on left at 45 degrees
+Neurological: Decreased sensation in left L5 dermatome, 4/5 strength in left ankle dorsiflexion
+Extremities: No swelling, normal pulses
+
+DIAGNOSTIC STUDIES:
+MRI of lumbar spine (3/10/2024) shows:
+- Disc herniation at L4-L5 with moderate central canal stenosis
+- Mild left foraminal narrowing
+- No cord compression
+- No evidence of fracture
+
+ASSESSMENT:
+1. Lumbar disc herniation at L4-L5 with radiculopathy
+2. Work-related injury with functional limitations
+3. Hypertension - controlled
+4. Type 2 Diabetes - controlled
+
+PLAN:
+1. Continue physical therapy 3 times per week for 6 weeks
+2. Start gabapentin 300mg three times daily for neuropathic pain
+3. Refer to orthopedic spine specialist for evaluation
+4. Work restrictions:
+   - No lifting >10 pounds
+   - No prolonged standing (>30 minutes)
+   - No repetitive bending or twisting
+   - Frequent position changes recommended
+   - Light duty work only
+5. Follow-up in 2 weeks to assess progress
+6. Consider epidural steroid injection if conservative management fails
+
+PROGNOSIS:
+Guarded. Many patients with similar herniation respond to conservative treatment within 6-12 weeks. However, given the degree of radiculopathy and functional limitations, surgical intervention may be necessary if symptoms do not improve with conservative management.
+
+DISABILITY CONSIDERATIONS:
+Patient is currently unable to perform his regular job duties as a warehouse worker, which requires frequent lifting of objects up to 50 pounds, prolonged standing, and repetitive bending. Current restrictions prevent return to usual occupation. Patient may be suitable for light-duty sedentary work with accommodations.
+
+Return to work timeline: Estimated 8-12 weeks for light duty work, 16-24 weeks for full duty if conservative management successful.
+
+
+___________________________
+Dr. Sarah Johnson, MD
+License #: MD-12345
+Date: March 15, 2024

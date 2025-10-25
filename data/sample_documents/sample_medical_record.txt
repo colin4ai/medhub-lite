@@ -1,0 +1,99 @@
+SAMPLE MEDICAL RECORD - DISCHARGE SUMMARY
+
+Patient Name: John Doe (Sample)
+Date of Birth: 01/15/1975
+Medical Record Number: 123456
+Date of Service: 03/15/2024
+
+CHIEF COMPLAINT:
+Lower back pain with radiation to left leg, limiting ability to work.
+
+HISTORY OF PRESENT ILLNESS:
+Mr. Doe is a 49-year-old construction worker who presents with acute onset of lower back pain that started approximately 3 weeks ago while lifting heavy materials at work. The pain radiates down his left leg to the knee. He rates the pain as 7/10 at rest and 9/10 with movement. The pain is worse with bending, lifting, and prolonged standing. He reports numbness and tingling in his left foot.
+
+PAST MEDICAL HISTORY:
+- Type 2 Diabetes Mellitus (diagnosed 2018)
+- Hypertension (diagnosed 2020)
+- Previous episode of back strain in 2022, resolved with physical therapy
+
+CURRENT MEDICATIONS:
+- Metformin 1000mg twice daily
+- Lisinopril 10mg once daily
+- Ibuprofen 600mg as needed for pain
+- Recently started: Gabapentin 300mg three times daily
+
+PHYSICAL EXAMINATION:
+Blood Pressure: 138/86 mmHg
+Heart Rate: 78 bpm
+Temperature: 98.6°F
+
+Musculoskeletal Exam:
+- Limited range of motion in lumbar spine
+- Positive straight leg raise on left at 45 degrees
+- Decreased sensation in L5 dermatome
+- Weakness in left ankle dorsiflexion (4/5 strength)
+- Tenderness over L4-L5 vertebrae
+
+DIAGNOSTIC STUDIES:
+MRI Lumbar Spine (03/10/2024):
+- Large left paracentral disc herniation at L4-L5 with impingement on left L5 nerve root
+- Mild degenerative disc disease at L5-S1
+- No spinal stenosis
+
+ASSESSMENT AND PLAN:
+1. Acute lumbar radiculopathy secondary to L4-L5 disc herniation
+2. Type 2 Diabetes - continue current management
+3. Hypertension - well controlled on current medication
+
+TREATMENT PLAN:
+- Conservative management with physical therapy 3 times per week for 6 weeks
+- Continue Gabapentin for neuropathic pain
+- Add muscle relaxant: Cyclobenzaprine 10mg at bedtime
+- Referral to pain management if symptoms do not improve within 4 weeks
+- Consider epidural steroid injection if conservative measures fail
+
+WORK RESTRICTIONS:
+- No lifting greater than 10 pounds
+- No prolonged standing (more than 30 minutes at a time)
+- No bending, twisting, or stooping
+- Sedentary work only until follow-up evaluation
+- Duration: 6-8 weeks, re-evaluate at follow-up
+
+FOLLOW-UP:
+- Return to clinic in 4 weeks (04/12/2024)
+- Sooner if symptoms worsen or new symptoms develop
+- Will reassess work capacity at next visit
+
+PROGNOSIS:
+Good with conservative management. Most patients with acute disc herniation improve within 6-12 weeks. Surgical intervention may be considered if conservative treatment fails after 6-8 weeks.
+
+Dr. Sarah Johnson, MD
+Orthopedic Surgery
+License #: 12345
+Date: 03/15/2024
+
+
+PROGRESS NOTE - FOLLOW-UP VISIT
+
+Date: 04/12/2024
+
+SUBJECTIVE:
+Patient reports 40% improvement in pain over the past 4 weeks. Pain now 4/10 at rest, 6/10 with activity. Continuing physical therapy twice weekly. Numbness in left foot has decreased. Still unable to perform construction work duties.
+
+OBJECTIVE:
+- Improved range of motion in lumbar spine
+- Straight leg raise negative on right, positive on left at 60 degrees (improved from 45)
+- Improved strength in left ankle dorsiflexion (4+/5)
+
+ASSESSMENT:
+Improving lumbar radiculopathy. Responding to conservative management.
+
+PLAN:
+- Continue current medications
+- Continue physical therapy for 4 more weeks
+- Gradually increase activity as tolerated
+- Modified work restrictions: can lift up to 20 pounds, still no prolonged standing
+- Re-evaluate in 4 weeks
+
+Dr. Sarah Johnson, MD
+Date: 04/12/2024

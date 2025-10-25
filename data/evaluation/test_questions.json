@@ -1,0 +1,22 @@
+[
+  {
+    "question": "What are the patient's current work restrictions?",
+    "expected_answer": "No lifting greater than 10 pounds initially, then modified to 20 pounds; no prolonged standing more than 30 minutes; no bending, twisting, or stooping; sedentary work only"
+  },
+  {
+    "question": "What is the primary diagnosis?",
+    "expected_answer": "Acute lumbar radiculopathy secondary to L4-L5 disc herniation"
+  },
+  {
+    "question": "What medications is the patient currently taking?",
+    "expected_answer": "Metformin 1000mg twice daily, Lisinopril 10mg once daily, Ibuprofen 600mg as needed, Gabapentin 300mg three times daily, Cyclobenzaprine 10mg at bedtime"
+  },
+  {
+    "question": "What improvement was noted at the follow-up visit?",
+    "expected_answer": "40% improvement in pain, decreased numbness in left foot, improved range of motion, improved straight leg raise from 45 to 60 degrees, improved ankle strength"
+  },
+  {
+    "question": "What is the patient's occupation and how does it relate to the injury?",
+    "expected_answer": "Construction worker; injury occurred while lifting heavy materials at work"
+  }
+]

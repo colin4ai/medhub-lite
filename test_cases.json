@@ -1,0 +1,42 @@
+[
+  {
+    "question": "What medications is the patient currently taking?",
+    "expected_answer_contains": ["lisinopril", "metformin", "gabapentin"],
+    "should_cite_source": true
+  },
+  {
+    "question": "What is the patient's primary diagnosis?",
+    "expected_answer_contains": ["disc herniation", "L4-L5", "radiculopathy"],
+    "should_cite_source": true
+  },
+  {
+    "question": "What are the patient's current work restrictions?",
+    "expected_answer_contains": ["lifting", "20 pounds", "light duty"],
+    "should_cite_source": true
+  },
+  {
+    "question": "What allergies does the patient have?",
+    "expected_answer_contains": ["penicillin"],
+    "should_cite_source": true
+  },
+  {
+    "question": "When did the patient's injury occur?",
+    "expected_answer_contains": ["february", "2024"],
+    "should_cite_source": true
+  },
+  {
+    "question": "What imaging studies were performed?",
+    "expected_answer_contains": ["mri", "lumbar spine"],
+    "should_cite_source": true
+  },
+  {
+    "question": "Is the patient's condition improving?",
+    "expected_answer_contains": ["improving", "progress", "better"],
+    "should_cite_source": true
+  },
+  {
+    "question": "When can the patient return to full duty work?",
+    "expected_answer_contains": ["12", "16", "weeks"],
+    "should_cite_source": true
+  }
+]
