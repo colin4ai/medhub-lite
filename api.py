@@ -6,6 +6,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
+from agents import AgentOrchestrator
 import tempfile
 import os
 
@@ -22,6 +23,8 @@ app = FastAPI(
 # Initialize Q&A system
 qa_system = MedicalQASystem()
 
+# Initialize multi-agent orchestrator
+orchestrator = AgentOrchestrator(qa_system, qa_system.vector_store)
 
 # Request/Response models
 class QuestionRequest(BaseModel):
@@ -41,6 +44,11 @@ class DocumentSummaryResponse(BaseModel):
     num_chunks: int
     medical_profile: dict
     metadata: dict
+
+
+class AgentRequest(BaseModel):
+    query: str
+    top_k: Optional[int] = 5
 
 
 # API Endpoints
@@ -121,6 +129,15 @@ async def ask_question(request: QuestionRequest):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error answering question: {str(e)}")
+
+
+@app.post("/agent")
+def agent_query(request: AgentRequest):
+    """Multi-agent endpoint: routes to QA, extraction, or summarization agent."""
+    try:
+        return orchestrator.run(request.query, request.top_k)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/documents/{doc_id}", response_model=DocumentSummaryResponse)
