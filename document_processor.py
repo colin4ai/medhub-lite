@@ -17,9 +17,9 @@ class MedicalDocument:
     """Represents a medical document with metadata"""
     
     def __init__(self, content: str, metadata: Dict):
-        self.content = content
-        self.metadata = metadata
-        self.chunks = []
+        self.content = content      # Full document text
+        self.metadata = metadata    # doc_id, filename, num_pages, doc_type, dates
+        self.chunks = []            # Gets filled later
     
     def __repr__(self):
         return f"MedicalDocument(id={self.metadata.get('doc_id', 'unknown')}, pages={self.metadata.get('num_pages', 0)})"
@@ -30,9 +30,9 @@ class DocumentProcessor:
     
     def __init__(self, chunk_size: int = config.CHUNK_SIZE, 
                  chunk_overlap: int = config.CHUNK_OVERLAP):
-        self.chunk_size = chunk_size
-        self.chunk_overlap = chunk_overlap
-        self.tokenizer = tiktoken.get_encoding("cl100k_base")
+        self.chunk_size = chunk_size        # e.g., 500 tokens
+        self.chunk_overlap = chunk_overlap  # e.g., 50 tokens
+        self.tokenizer = tiktoken.get_encoding("cl100k_base")  # Same tokenizer OpenAI uses
     
     def load_pdf(self, file_path: str) -> MedicalDocument:
         """

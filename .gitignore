@@ -55,3 +55,4 @@ test_results/
 # Sample data (optional - uncomment if you don't want to commit sample docs)
 # sample_docs/
 # medical_docs/
+.claude/
