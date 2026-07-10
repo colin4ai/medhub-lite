@@ -45,7 +45,7 @@ class QAEvaluator:
             should_cite = test_case.get("should_cite_source", True)
             
             # Get answer from system
-            response = self.qa_system.answer_question(question)
+            response = self.qa_system.ask_question(question)
             answer = response["answer"].lower()
             
             # Check if expected terms are in answer
@@ -84,7 +84,7 @@ class QAEvaluator:
         retrieval_scores = []
         
         for question in questions:
-            response = self.qa_system.answer_question(question)
+            response = self.qa_system.ask_question(question)
             retrieval_scores.append({
                 "question": question,
                 "chunks_retrieved": response["retrieved_chunks"],
@@ -122,7 +122,7 @@ class QAEvaluator:
             reference = test_case.get("reference_answer", "")
             
             # Get system answer
-            response = self.qa_system.answer_question(question)
+            response = self.qa_system.ask_question(question)
             system_answer = response["answer"]
             
             # Use LLM to judge quality

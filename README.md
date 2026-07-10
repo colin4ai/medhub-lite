@@ -161,8 +161,31 @@ TOP_K_RESULTS = 5  # number of chunks to retrieve
 
 ## 🧪 Evaluation
 
-Create a test set (`test_cases.json`):
+Two eval harnesses: answer quality for the RAG pipeline, and routing accuracy for the multi-agent layer.
 
+### Routing accuracy — multi-agent orchestrator
+
+31 labeled queries across three routes (qa / extract / summarize), including deliberate
+boundary cases (field-related questions, softly-phrased commands).
+
+| Router prompt | Accuracy | QA | Extract | Summarize |
+|---|---|---|---|---|
+| Original (zero-shot) | 71.0% | 2/11 | 10/10 | 10/10 |
+| Current (few-shot + decision rule) | **100%** | 11/11 | 10/10 | 10/10 |
+
+**Failure mode found:** the original prompt systematically misrouted field-related
+questions ("What medications is the patient taking?") to extraction — the extract route's
+description mentioned patient fields, so any question naming a field was classified as an
+extraction command. **Fix:** few-shot examples per route plus an explicit decision rule
+(questions about content → qa; commands to produce structured records → extract).
+
+```bash
+python evaluate_routing.py
+```
+
+### Answer quality — RAG pipeline
+
+Labeled Q&A cases checking factual content and source citations (`test_cases.json`):
 ```json
 [
   {
@@ -172,9 +195,6 @@ Create a test set (`test_cases.json`):
   }
 ]
 ```
-
-Run evaluation:
-
 ```bash
 python main.py evaluate --test-set test_cases.json
 ```
