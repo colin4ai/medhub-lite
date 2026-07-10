@@ -199,6 +199,19 @@ Labeled Q&A cases checking factual content and source citations (`test_cases.jso
 python main.py evaluate --test-set test_cases.json
 ```
 
+### Refusal correctness — hallucination prevention
+
+5 out-of-corpus questions (answers genuinely absent from the ingested documents).
+A grounded system should decline rather than invent.
+
+**Result: 5/5 correctly declined, zero hallucinations** — every response explicitly
+stated the documents do not contain the requested information, several citing which
+sources were checked.
+
+```bash
+python evaluate_refusal.py
+```
+
 ## 🎓 What I Learned Building This
 
 1. **Medical document chunking is hard**: Can't break mid-diagnosis or mid-treatment plan

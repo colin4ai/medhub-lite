@@ -1,0 +1,7 @@
+[
+  {"question": "What is the patient's blood type?"},
+  {"question": "What surgeries has the patient had in the past?"},
+  {"question": "What is the patient's insurance provider?"},
+  {"question": "Does the patient smoke or drink alcohol?"},
+  {"question": "What were the results of the patient's colonoscopy?"}
+]
