@@ -48,7 +48,11 @@ class VectorStore:
         
         # Generate embeddings
         print("Generating embeddings...")
-        embeddings = self.embedding_generator.generate_embeddings_batch(documents)
+        embeddings = []
+        for start in range(0, len(documents), config.EMBEDDING_BATCH_SIZE):
+            embeddings.extend(self.embedding_generator.generate_embeddings_batch(
+                documents[start:start + config.EMBEDDING_BATCH_SIZE]
+            ))
         
         # Upsert makes re-ingestion idempotent for deterministic chunk IDs.
         self.collection.upsert(
@@ -57,6 +61,15 @@ class VectorStore:
             ids=ids,
             metadatas=metadatas
         )
+
+        # If a newer version produces fewer chunks, remove stale chunks only after
+        # the replacement embeddings have been written successfully.
+        current_ids = set(ids)
+        for doc_id in {chunk['doc_id'] for chunk in chunks}:
+            stored = self.collection.get(where={"doc_id": doc_id})
+            stale_ids = [stored_id for stored_id in stored.get('ids', []) if stored_id not in current_ids]
+            if stale_ids:
+                self.collection.delete(ids=stale_ids)
         
         print(f"Successfully added {len(chunks)} chunks")
     
@@ -182,6 +195,14 @@ class VectorStore:
         if results['ids']:
             self.collection.delete(ids=results['ids'])
             print(f"Deleted {len(results['ids'])} chunks from document {doc_id}")
+
+    def delete_tenant(self, tenant_id: str) -> int:
+        """Delete only one tenant's chunks; never cross tenant boundaries."""
+        results = self.collection.get(where={"tenant_id": tenant_id})
+        ids = results.get('ids', [])
+        if ids:
+            self.collection.delete(ids=ids)
+        return len(ids)
     
     def clear_all(self):
         """Clear all data from the collection"""

@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Test application
+        run: |
+          pip install -r requirements-dev.txt
+          OPENAI_API_KEY=dummy python -m pytest -q
+          ruff check . --exclude infra/terraform/.terraform
+          python -m compileall -q -x '(^|/)(venv|\.git)/' .
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.5"
+      - name: Validate infrastructure
+        run: |
+          terraform -chdir=infra/terraform fmt -check
+          terraform -chdir=infra/terraform init -backend=false
+          terraform -chdir=infra/terraform validate
+      - name: Build production image
+        run: docker build --platform linux/amd64 -t medhub-lite:ci .

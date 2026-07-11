@@ -4,7 +4,6 @@ Measures accuracy, retrieval quality, and identifies failure modes.
 """
 import json
 from typing import List, Dict
-from pathlib import Path
 from qa_system import MedicalQASystem
 import time
 
@@ -65,7 +64,7 @@ class QAEvaluator:
             'results': results
         }
         
-        print(f"\n✓ Evaluation complete!")
+        print("\n✓ Evaluation complete!")
         print(f"  Average latency: {avg_latency:.2f}s")
         print(f"  Average sources: {avg_sources:.1f}")
         
@@ -107,7 +106,7 @@ class QAEvaluator:
             'retrieval_results': results
         }
         
-        print(f"✓ Retrieval evaluation complete!")
+        print("✓ Retrieval evaluation complete!")
         print(f"  Average distance: {avg_distance:.4f}")
         
         return summary

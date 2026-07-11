@@ -4,6 +4,7 @@ Run this after setup to ensure everything is configured correctly.
 """
 import sys
 import os
+import importlib
 
 # This file is an interactive setup diagnostic rather than an assertion-based
 # pytest suite. Keep pytest focused on the real regression tests.
@@ -13,11 +14,8 @@ def test_imports():
     """Test that all required packages can be imported"""
     print("Testing imports...")
     try:
-        import openai
-        import chromadb
-        import fastapi
-        import PyPDF2
-        import tiktoken
+        for module in ("openai", "chromadb", "fastapi", "pypdf", "tiktoken"):
+            importlib.import_module(module)
         print("✓ All packages imported successfully")
         return True
     except ImportError as e:
@@ -45,11 +43,10 @@ def test_modules():
     """Test that all custom modules can be imported"""
     print("\nTesting custom modules...")
     try:
-        from document_processor import DocumentProcessor
-        from embeddings import EmbeddingGenerator
-        from vector_store import VectorStore
-        from medical_ner import MedicalNER
-        from qa_system import MedicalQASystem
+        for module in (
+            "document_processor", "embeddings", "vector_store", "medical_ner", "qa_system"
+        ):
+            importlib.import_module(module)
         print("✓ All custom modules imported successfully")
         return True
     except ImportError as e:

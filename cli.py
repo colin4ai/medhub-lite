@@ -1,7 +1,6 @@
 """
 Command-line interface for MedHub Lite.
 """
-import sys
 from pathlib import Path
 from qa_system import MedicalQASystem
 
@@ -70,7 +69,7 @@ def main():
                 
                 try:
                     document = qa.add_document(file_path)
-                    print(f"\n✓ Document added successfully!")
+                    print("\n✓ Document added successfully!")
                     print(f"  ID: {document.metadata['doc_id']}")
                     print(f"  Type: {document.metadata.get('doc_type', 'unknown')}")
                     print(f"  Chunks: {len(document.chunks)}\n")
@@ -85,7 +84,7 @@ def main():
                 question = args.strip()
                 try:
                     result = qa.ask_question(question)
-                    print(f"\n📝 Answer:")
+                    print("\n📝 Answer:")
                     print(f"{result['answer']}\n")
                     print(f"📚 Sources ({result['num_sources']}):")
                     for i, source in enumerate(result['sources'], 1):
@@ -109,7 +108,7 @@ def main():
                         print(f"  Chunks: {summary['num_chunks']}")
                         if 'medical_profile' in summary and summary['medical_profile']:
                             profile = summary['medical_profile']
-                            print(f"\n  Medical Profile:")
+                            print("\n  Medical Profile:")
                             print(f"    Diagnoses: {', '.join(profile.get('diagnoses', [])) or 'None found'}")
                             print(f"    Medications: {', '.join(profile.get('medications', [])) or 'None found'}")
                             print(f"    Symptoms: {', '.join(profile.get('key_symptoms', [])) or 'None found'}")
@@ -133,7 +132,7 @@ def main():
             elif command == "stats":
                 try:
                     stats = qa.get_system_stats()
-                    print(f"\n📊 System Statistics:")
+                    print("\n📊 System Statistics:")
                     print(f"  Total chunks: {stats['total_chunks']}")
                     print(f"  Collection: {stats['collection_name']}")
                     print()

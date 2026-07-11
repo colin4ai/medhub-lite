@@ -3,7 +3,8 @@ Document processing module for medical documents.
 Handles PDF/text ingestion, chunking, and metadata extraction.
 """
 import re
-from typing import List, Dict, Optional
+import hashlib
+from typing import List, Dict
 from datetime import datetime
 import pypdf
 import pdfplumber
@@ -59,7 +60,7 @@ class DocumentProcessor:
                         full_text += text + "\n\n"
         except Exception as e:
             print(f"Error reading PDF with pdfplumber: {e}")
-            # Fallback to PyPDF2
+            # Fallback to pypdf
             try:
                 with open(file_path, 'rb') as file:
                     pdf_reader = pypdf.PdfReader(file)
@@ -67,7 +68,7 @@ class DocumentProcessor:
                     for page in pdf_reader.pages:
                         full_text += page.extract_text() + "\n\n"
             except Exception as e2:
-                print(f"Error reading PDF with PyPDF2: {e2}")
+                print(f"Error reading PDF with pypdf: {e2}")
                 raise
         
         # Extract metadata
@@ -77,7 +78,8 @@ class DocumentProcessor:
             'file_path': str(file_path),
             'num_pages': num_pages,
             'extracted_date': datetime.now().isoformat(),
-            'doc_type': self._infer_document_type(full_text)
+            'doc_type': self._infer_document_type(full_text),
+            'content_sha256': hashlib.sha256(full_text.encode('utf-8')).hexdigest()
         }
         
         # Try to extract dates from content
@@ -107,7 +109,8 @@ class DocumentProcessor:
             'filename': file_path.name,
             'file_path': str(file_path),
             'extracted_date': datetime.now().isoformat(),
-            'doc_type': self._infer_document_type(content)
+            'doc_type': self._infer_document_type(content),
+            'content_sha256': hashlib.sha256(content.encode('utf-8')).hexdigest()
         }
         
         dates = self._extract_dates(content)
@@ -131,17 +134,20 @@ class DocumentProcessor:
         content = document.content
         
         # Split by paragraphs first
-        paragraphs = self._split_into_paragraphs(content)
+        paragraphs = []
+        for paragraph in self._split_into_paragraphs(content):
+            paragraphs.extend(self._split_oversized_paragraph(paragraph))
         
         current_chunk = ""
-        current_tokens = 0
         chunk_index = 0
         
         for para in paragraphs:
             para_tokens = len(self.tokenizer.encode(para))
+            candidate = f"{current_chunk}\n\n{para}" if current_chunk else para
+            candidate_tokens = len(self.tokenizer.encode(candidate))
             
             # If adding this paragraph would exceed chunk size
-            if current_tokens + para_tokens > self.chunk_size and current_chunk:
+            if candidate_tokens > self.chunk_size and current_chunk:
                 # Save current chunk
                 chunks.append(self._create_chunk(
                     content=current_chunk,
@@ -149,17 +155,23 @@ class DocumentProcessor:
                     document=document
                 ))
                 chunk_index += 1
+                if chunk_index >= config.MAX_CHUNKS_PER_DOC:
+                    break
                 
                 # Start new chunk with overlap
-                current_chunk = self._get_overlap_text(current_chunk) + para
-                current_tokens = len(self.tokenizer.encode(current_chunk))
+                overlap_budget = max(0, self.chunk_size - para_tokens)
+                if overlap_budget:
+                    prior_tokens = self.tokenizer.encode(current_chunk)
+                    overlap = self.tokenizer.decode(prior_tokens[-min(self.chunk_overlap, overlap_budget):])
+                    current_chunk = overlap + "\n\n" + para
+                else:
+                    current_chunk = para
             else:
                 # Add paragraph to current chunk
-                current_chunk += "\n\n" + para if current_chunk else para
-                current_tokens += para_tokens
+                current_chunk = candidate
         
         # Add final chunk
-        if current_chunk:
+        if current_chunk and len(chunks) < config.MAX_CHUNKS_PER_DOC:
             chunks.append(self._create_chunk(
                 content=current_chunk,
                 index=chunk_index,
@@ -171,14 +183,31 @@ class DocumentProcessor:
     
     def _create_chunk(self, content: str, index: int, document: MedicalDocument) -> Dict:
         """Create a chunk dictionary with metadata"""
+        section_headers = re.findall(r'(?m)^([A-Z][A-Z /&-]{2,}:?)$', content)
         return {
             'content': content.strip(),
             'chunk_index': index,
             'doc_id': document.metadata['doc_id'],
             'filename': document.metadata['filename'],
             'doc_type': document.metadata.get('doc_type', 'unknown'),
+            'tenant_id': document.metadata.get('tenant_id', config.DEFAULT_TENANT_ID),
+            'document_dates': ",".join(document.metadata.get('document_dates', [])),
+            'section': section_headers[-1].rstrip(':') if section_headers else 'unknown',
+            'content_sha256': document.metadata.get('content_sha256', ''),
             'chunk_id': f"{document.metadata['doc_id']}_chunk_{index}"
         }
+
+    def _split_oversized_paragraph(self, paragraph: str) -> List[str]:
+        """Hard-split paragraphs that exceed the token budget."""
+        tokens = self.tokenizer.encode(paragraph)
+        if len(tokens) <= self.chunk_size:
+            return [paragraph]
+        step = max(1, self.chunk_size - self.chunk_overlap)
+        return [
+            self.tokenizer.decode(tokens[start:start + self.chunk_size])
+            for start in range(0, len(tokens), step)
+            if tokens[start:start + self.chunk_size]
+        ]
     
     def _split_into_paragraphs(self, text: str) -> List[str]:
         """Split text into paragraphs"""

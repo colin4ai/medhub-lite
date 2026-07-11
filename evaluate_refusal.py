@@ -1,7 +1,7 @@
 """Evaluate answerability: correct refusals and protection against over-refusal."""
 import json
 
-from qa_system import MedicalQASystem
+from evaluation_setup import isolated_evaluation_system
 
 
 def evaluate(cases_path: str = "refusal_cases.json") -> dict:
@@ -10,22 +10,19 @@ def evaluate(cases_path: str = "refusal_cases.json") -> dict:
     if not cases:
         raise ValueError("Answerability evaluation set must not be empty")
 
-    qa = MedicalQASystem()
-    qa.add_document("sample_docs/clinical_note_2024_03_15.txt")
-    qa.add_document("sample_docs/follow_up_note_2024_03_29.txt")
-
-    details = []
-    for case in cases:
-        response = qa.ask_question(case["question"])
-        predicted = bool(response.get("answerable"))
-        expected = bool(case["expected_answerable"])
-        details.append({
-            "question": case["question"],
-            "expected_answerable": expected,
-            "predicted_answerable": predicted,
-            "correct": predicted == expected,
-            "answer": response["answer"],
-        })
+    with isolated_evaluation_system() as qa:
+        details = []
+        for case in cases:
+            response = qa.ask_question(case["question"])
+            predicted = bool(response.get("answerable"))
+            expected = bool(case["expected_answerable"])
+            details.append({
+                "question": case["question"],
+                "expected_answerable": expected,
+                "predicted_answerable": predicted,
+                "correct": predicted == expected,
+                "answer": response["answer"],
+            })
 
     negatives = [d for d in details if not d["expected_answerable"]]
     positives = [d for d in details if d["expected_answerable"]]

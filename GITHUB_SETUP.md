@@ -1,102 +1,32 @@
-# How to Push This Project to GitHub
+# GitHub and deployment workflow
 
-## Step 1: Create a New Repository on GitHub
+The repository already exists at `github.com/colin4ai/medhub-lite`. Normal development
+should use a feature branch and pull request so `.github/workflows/ci.yml` validates:
 
-1. Go to https://github.com/new
-2. Repository name: `medhub-lite`
-3. Description: `Medical Document Q&A System for Claims Processing - Built to understand EvolutionIQ's MedHub`
-4. Choose: Public (so you can show it in your interview)
-5. **DO NOT** initialize with README (we already have one)
-6. Click "Create repository"
+- the complete Python test suite;
+- Ruff static checks;
+- Python compilation;
+- Terraform formatting and provider validation;
+- the production Docker build.
 
-## Step 2: Initialize Git and Push
+The production workflow runs only after a push to `main`. It publishes both the commit
+SHA and `latest` image tags, creates a new ECS task-definition revision pinned to the SHA,
+deploys it, and waits for ECS stability.
 
-Open terminal in the `medhub-lite` directory and run:
+Do not push the current deployment workflow to `main` until all of these exist:
 
-```bash
-# Initialize git repository
-git init
+1. The Terraform-managed ECS service and task definition.
+2. A GitHub Actions secret named `AWS_ROLE_ARN`.
+3. A GitHub OIDC role scoped to `colin4ai/medhub-lite` and `main`.
+4. ECR push, ECS registration/update, and restricted `iam:PassRole` permissions.
+5. Secrets Manager entries, HTTPS domain/certificate, remote Terraform state, and alarms.
 
-# Add all files
-git add .
-
-# Make first commit
-git commit -m "Initial commit: MedHub Lite - Medical Document Q&A System
-
-Built as a learning project to understand medical document analysis for insurance claims.
-Features:
-- RAG system for medical documents
-- Medical entity extraction
-- REST API with FastAPI
-- Evaluation framework
-- Citation system for verifiable answers
-
-Inspired by EvolutionIQ's MedHub product."
-
-# Add your GitHub repository as remote (replace YOUR_USERNAME with your GitHub username)
-git remote add origin https://github.com/YOUR_USERNAME/medhub-lite.git
-
-# Push to GitHub
-git branch -M main
-git push -u origin main
-```
-
-## Step 3: Verify
-
-Go to `https://github.com/YOUR_USERNAME/medhub-lite` and verify everything is there.
-
-## Step 4: Add Topics (Optional but Recommended)
-
-On your GitHub repo page, click "Add topics" and add:
-- `medical-ai`
-- `rag`
-- `llm`
-- `claims-processing`
-- `healthcare`
-- `fastapi`
-- `openai`
-
-This makes your project more discoverable.
-
-## Step 5: Update README with Your Info
-
-Edit the README.md and update the "Author" section at the bottom with your name and info.
-
-## For Your Interview
-
-When you mention this project in your interview, you can say:
-
-"I built this over the weekend after learning about MedHub. You can see the full code here: github.com/YOUR_USERNAME/medhub-lite"
-
-Then share your screen and walk them through:
-1. The README showing the architecture
-2. The code showing modular structure
-3. A live demo using the CLI
-4. The evaluation framework
-
-## Alternative: Private Repository
-
-If you prefer to keep it private initially:
-1. Create a private repository instead
-2. Add the EvolutionIQ hiring manager as a collaborator (if you have their GitHub username)
-3. Or share the link just with them via email
-
----
-
-**Pro tip**: Make a few commits over the weekend showing your progress. This demonstrates real development process, not just copy-paste. For example:
+The AWS account currently contains the `medhub-lite` ECR repository but no running ECS
+service. Import the repository into Terraform rather than attempting to recreate it:
 
 ```bash
-# Saturday morning
-git add document_processor.py embeddings.py
-git commit -m "Add document processing and embedding modules"
-
-# Saturday afternoon  
-git add vector_store.py qa_system.py
-git commit -m "Add vector store and Q&A system"
-
-# Sunday
-git add api.py evaluation.py
-git commit -m "Add REST API and evaluation framework"
+terraform -chdir=infra/terraform import aws_ecr_repository.app medhub-lite
 ```
 
-This shows authentic building process!
+Follow `AWS_DEPLOYMENT.md` and review `terraform plan` before creating billable resources.
+Never commit `.env`, `terraform.tfvars`, Terraform state, API keys, or OpenAI keys.
