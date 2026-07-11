@@ -7,6 +7,16 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: medhub-lite
+  ECS_CLUSTER: medhub-lite
+  ECS_SERVICE: medhub-lite
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
 
 jobs:
   build-and-push:
@@ -22,14 +32,14 @@ jobs:
 
       - name: Run smoke tests
         run: |
-          pip install -r requirements.txt
-          OPENAI_API_KEY=dummy python -m pytest test_smoke.py -v
+          pip install -r requirements-dev.txt
+          OPENAI_API_KEY=dummy python -m pytest -q
+          ruff check . --exclude infra/terraform/.terraform
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
@@ -40,5 +50,33 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker build --platform linux/amd64 \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }} \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Deploy ECS service
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}"
+          aws ecs describe-task-definition \
+            --task-definition "$ECS_SERVICE" \
+            --query taskDefinition > current-task-definition.json
+          jq --arg IMAGE "$IMAGE" --arg CONTAINER "$ECR_REPOSITORY" '
+            .containerDefinitions |= map(if .name == $CONTAINER then .image = $IMAGE else . end)
+            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                  .compatibilities, .registeredAt, .registeredBy)
+          ' current-task-definition.json > next-task-definition.json
+          TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://next-task-definition.json \
+            --query taskDefinition.taskDefinitionArn \
+            --output text)
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --task-definition "$TASK_DEFINITION_ARN"
+          aws ecs wait services-stable \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE"

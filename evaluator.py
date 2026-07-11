@@ -59,6 +59,8 @@ class QAEvaluator:
                 "terms_found": terms_found,
                 "answerable": response.get("answerable", False),
                 "sources_used": len(response.get("sources", [])),
+                "token_usage": response.get("token_usage", {}),
+                "latency_ms": response.get("latency_ms", {}),
             })
 
         total = len(details)

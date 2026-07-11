@@ -3,7 +3,7 @@ Medical Named Entity Recognition (NER) module.
 Extracts medical entities from text.
 """
 import re
-from typing import List, Dict, Set
+from typing import List, Dict
 
 
 class MedicalNER:

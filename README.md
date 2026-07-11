@@ -2,7 +2,9 @@
 
 > **Built to understand how EvolutionIQ's MedHub solves the 12-13 hour medical document review problem**
 
-A production-style RAG (Retrieval Augmented Generation) system for medical document analysis, featuring intelligent chunking, medical entity awareness, and citation tracking.
+A production-oriented RAG prototype for medical document analysis, featuring hybrid
+retrieval, claim-level evidence validation, tenant isolation, evaluation, and an AWS
+deployment reference architecture.
 
 ## 🎯 The Problem
 
@@ -19,22 +21,25 @@ MedHub Lite demonstrates a medical document Q&A system that:
 - **Provides citations**: Every answer links back to source documents
 - **Understands medical context**: Intelligent chunking preserves clinical meaning
 - **Generates timelines**: Chronological view of medical events
-- **Scales efficiently**: Handles large document collections
+- **Fails safely**: Refuses answers and extracted fields without validated evidence
 
 ## 🏗️ Architecture
 
 ```
-Document → Chunking → Embedding → Vector Store → Retrieval → LLM → Answer
+Document → Chunking → Embedding → Vector Store → Hybrid Retrieval → Claims → Verification
    ↓           ↓          ↓            ↓            ↓         ↓        ↓
- Medical   Semantic   OpenAI    ChromaDB      Similarity  GPT-4   Citations
-  Aware   Sections  Embeddings            Search
+ Metadata   Token      OpenAI      Chroma       Dense +       Exact quotes +
+ + tenant   bounded    embeddings  (prototype)  lexical       optional entailment
 ```
 
 **Key Design Decisions:**
 - **Medical-aware chunking**: Splits by clinical sections (HISTORY, ASSESSMENT, PLAN) to preserve medical context
 - **OpenAI embeddings**: Fast, accurate, easy to deploy (can swap for Bio_ClinicalBERT if medical-specific needed)
-- **ChromaDB**: Simple vector store, production-ready, easy to scale
-- **GPT-4**: Strong instruction following for citation generation
+- **ChromaDB**: Simple persistent store for a single-task prototype; a managed vector
+  service is required before horizontal scaling
+- **Structured generation**: Atomic claims and extracted fields require exact evidence
+- **Security boundaries**: API-key authentication, tenant metadata filters, upload limits,
+  non-root container execution, and HTTPS AWS ingress
 - **Modular Python**: Production code structure, not notebooks
 
 ## 🚀 Quick Start
@@ -92,7 +97,7 @@ python main.py timeline
 python main.py stats
 ```
 
-## 📊 Business Impact (Projected)
+## 📊 Business hypotheses (not validated)
 
 Based on EvolutionIQ's MedHub metrics and this prototype:
 
@@ -100,14 +105,15 @@ Based on EvolutionIQ's MedHub metrics and this prototype:
 |--------|---------|-------------|-------------|
 | Time to answer key questions | 30-60 min | 2-3 min | **90-95% reduction** |
 | Documents processed per day | 5-10 | 30-50 | **5x increase** |
-| Citation accuracy | Manual | Automated | **100% traceable** |
+| Evidence traceability | Manual | Automated claim-to-quote links | Requires expert validation |
 
-**Note**: These are projections based on prototype performance. Production systems would require validation with real claims data.
+These are product hypotheses, not measured outcomes. Real impact requires representative
+documents, domain-expert review, user studies, and production telemetry.
 
 ## 🛠️ Technical Features
 
 ### Intelligent Document Processing
-- **Multi-format support**: PDF, DOCX, TXT
+- **Multi-format support**: PDF and TXT
 - **Medical section detection**: Automatically identifies HISTORY, EXAM, ASSESSMENT, etc.
 - **Smart chunking**: Preserves clinical context, respects section boundaries
 - **Metadata extraction**: Document type, dates, clinical notes classification
@@ -115,7 +121,7 @@ Based on EvolutionIQ's MedHub metrics and this prototype:
 ### Medical-Aware Retrieval
 - **Semantic search**: Finds relevant content even with different terminology
 - **Context window management**: Handles long medical documents efficiently
-- **Metadata filtering**: Search by document type, date range, etc.
+- **Metadata filtering**: Tenant-enforced retrieval plus document type, section, and dates
 
 ### Citation System
 - **Source tracking**: Every answer includes source document references
@@ -202,7 +208,7 @@ Labeled Q&A cases checking factual content and source citations (`test_cases.jso
 ]
 ```
 ```bash
-python main.py evaluate --test-set test_cases.json
+python evaluate_qa.py
 ```
 
 ### Answerability and hallucination controls
@@ -214,6 +220,11 @@ refusal score by refusing everything.
 ```bash
 python evaluate_refusal.py
 ```
+
+Each offline evaluator builds a fresh temporary vector index from the declared sample
+corpus and removes it after the run. It does not reuse the application database. This
+prevents stale Chroma schemas, prior uploads, and accidental data leakage from changing
+the score.
 
 The runtime also filters retrieval below `SIMILARITY_THRESHOLD`, requires structured
 answerability plus exact quoted source spans for every claim, and converts invalid or
@@ -232,21 +243,38 @@ weighted combination of vector similarity and domain-term overlap.
 python evaluate_retrieval.py
 ```
 
+Before scoring, the retrieval evaluator verifies that every labeled chunk exists in the
+fresh index. It fails explicitly if the corpus and labels have drifted rather than
+silently counting labels for documents that were never indexed.
+
+The latest small synthetic regression run is recorded in `evaluation_results.json`.
+These development results are useful for catching regressions, not for estimating
+production accuracy or clinical generalization.
+
 Q&A responses also expose retrieval, generation, and total latency plus prompt and
 completion token counts for cost and performance monitoring.
 
-### Refusal correctness — hallucination prevention
+### Model comparison
 
-5 out-of-corpus questions (answers genuinely absent from the ingested documents).
-A grounded system should decline rather than invent.
-
-**Result: 5/5 correctly declined, zero hallucinations** — every response explicitly
-stated the documents do not contain the requested information, several citing which
-sources were checked.
+Compare candidate generation models while holding retrieval and the test set constant:
 
 ```bash
-python evaluate_refusal.py
+python evaluate_models.py --models gpt-4o-mini gpt-4o
 ```
+
+The report includes task accuracy, citation rate, token usage, and average latency. This
+makes paid API calls.
+
+## Production controls and AWS
+
+The API provides `/health/live`, `/health/ready`, and authenticated `/metrics` endpoints,
+JSON request logs, request IDs, bounded uploads, tenant-scoped data operations, model
+token/latency telemetry, and optional semantic entailment verification.
+
+The Terraform reference stack provisions HTTPS ALB ingress, ECS Fargate, ECR scanning,
+encrypted EFS, Secrets Manager integration, CloudWatch logs, Route 53, and ACM. See
+[`AWS_DEPLOYMENT.md`](AWS_DEPLOYMENT.md). The stack intentionally uses one ECS task because
+embedded Chroma is not a horizontally scalable multi-writer service.
 
 ## 🎓 What I Learned Building This
 

@@ -2,6 +2,7 @@
 Embedding generation module using OpenAI's embedding API.
 """
 from typing import List
+from functools import lru_cache
 import openai
 import config
 
@@ -13,6 +14,7 @@ class EmbeddingGenerator:
         self.model = model
         self.client = openai.OpenAI(api_key=config.OPENAI_API_KEY)
     
+    @lru_cache(maxsize=config.EMBEDDING_CACHE_SIZE)
     def generate_embedding(self, text: str) -> List[float]:
         """
         Generate embedding for a single text.

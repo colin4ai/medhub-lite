@@ -1,43 +1,49 @@
 {
-  "run_date": "2026-07-10",
-  "code_version_note": "Historical baseline before exact-quote claim validation and hybrid reranking; rerun required for the current pipeline.",
+  "run_date": "2026-07-11",
+  "code_version_note": "Current pipeline with isolated evaluation indexes, exact-quote claim validation, and hybrid reranking.",
   "model": "gpt-4o-mini",
   "embedding_model": "text-embedding-3-small",
   "similarity_threshold": 0.425,
   "results": {
     "rag_qa": {
-      "correct": 8,
+      "correct": 7,
       "total": 8,
-      "accuracy": 1.0,
-      "valid_citations": 8,
-      "citation_rate": 1.0
+      "accuracy": 0.875,
+      "valid_citations": 7,
+      "citation_rate": 0.875
     },
     "answerability": {
-      "correct": 10,
+      "correct": 8,
       "total": 10,
-      "accuracy": 1.0,
+      "accuracy": 0.8,
+      "correct_refusals": 5,
+      "unsupported_questions": 5,
       "correct_refusal_rate": 1.0,
-      "answerable_recall": 1.0
+      "answered_supported_questions": 3,
+      "supported_questions": 5,
+      "answerable_recall": 0.6
+    },
+    "retrieval": {
+      "top_k": 3,
+      "queries": 8,
+      "mean_recall_at_k": 0.875,
+      "mean_reciprocal_rank": 0.75
     },
     "routing_development": {
       "correct": 31,
       "total": 31,
       "accuracy": 1.0
     },
-    "routing_regression": {
-      "correct": 12,
-      "total": 12,
-      "accuracy": 1.0
-    },
     "offline_tests": {
-      "passed": 9,
+      "passed": 26,
       "failed": 0
     }
   },
   "limitations": [
     "The labeled sets are small and synthetic.",
-    "Development and regression sets were used during tuning and are not unbiased holdouts.",
+    "The routing development set was used during tuning and is not an unbiased holdout.",
     "Keyword answer checks do not replace expert or claim-level entailment evaluation.",
+    "The answerability result shows conservative behavior: no unsupported answers in five negative cases, but two false refusals in five supported cases.",
     "The retrieval threshold must be recalibrated when the corpus or embedding model changes."
   ]
 }

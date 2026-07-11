@@ -1,10 +1,10 @@
 [
-  {"question": "What is the primary diagnosis?", "expected_chunk_ids": ["clinical_note_2024_03_15_chunk_0", "sample_medical_record_chunk_0"]},
-  {"question": "Which medications is the patient taking?", "expected_chunk_ids": ["clinical_note_2024_03_15_chunk_0", "follow_up_note_2024_03_29_chunk_0"]},
-  {"question": "What are the current work restrictions?", "expected_chunk_ids": ["follow_up_note_2024_03_29_chunk_0"]},
-  {"question": "What allergy is recorded?", "expected_chunk_ids": ["clinical_note_2024_03_15_chunk_0"]},
-  {"question": "What did the lumbar MRI show?", "expected_chunk_ids": ["clinical_note_2024_03_15_chunk_0", "sample_medical_record_chunk_0"]},
-  {"question": "How did the patient respond to treatment?", "expected_chunk_ids": ["follow_up_note_2024_03_29_chunk_0"]},
-  {"question": "When did the work injury occur?", "expected_chunk_ids": ["clinical_note_2024_03_15_chunk_0", "sample_medical_record_chunk_0"]},
-  {"question": "When might the patient return to full duty?", "expected_chunk_ids": ["follow_up_note_2024_03_29_chunk_0"]}
+  {"question": "What is the primary diagnosis?", "expected_chunk_ids": ["default:clinical_note_2024_03_15_chunk_0", "default:sample_medical_record_chunk_0"]},
+  {"question": "Which medications is the patient taking?", "expected_chunk_ids": ["default:clinical_note_2024_03_15_chunk_0", "default:follow_up_note_2024_03_29_chunk_0"]},
+  {"question": "What are the current work restrictions?", "expected_chunk_ids": ["default:follow_up_note_2024_03_29_chunk_0"]},
+  {"question": "What allergy is recorded?", "expected_chunk_ids": ["default:clinical_note_2024_03_15_chunk_0"]},
+  {"question": "What did the lumbar MRI show?", "expected_chunk_ids": ["default:clinical_note_2024_03_15_chunk_0", "default:sample_medical_record_chunk_0"]},
+  {"question": "How did the patient respond to treatment?", "expected_chunk_ids": ["default:follow_up_note_2024_03_29_chunk_0"]},
+  {"question": "When did the work injury occur?", "expected_chunk_ids": ["default:clinical_note_2024_03_15_chunk_0", "default:sample_medical_record_chunk_0"]},
+  {"question": "When might the patient return to full duty?", "expected_chunk_ids": ["default:follow_up_note_2024_03_29_chunk_0"]}
 ]

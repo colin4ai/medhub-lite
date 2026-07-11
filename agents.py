@@ -53,7 +53,10 @@ class AgentOrchestrator:
         self.qa = qa_system
         self.store = vector_store
 
-    def run(self, query: str, top_k: int = 5) -> dict:
+    def run(
+        self, query: str, top_k: int = 5,
+        tenant_id: str = config.DEFAULT_TENANT_ID,
+    ) -> dict:
         query = query.strip()
         if not query:
             raise ValueError("Query must not be empty")
@@ -72,11 +75,11 @@ class AgentOrchestrator:
 
         # 2. Dispatch
         if route == "extract":
-            result = self._extraction_agent(query, top_k, trace)
+            result = self._extraction_agent(query, top_k, trace, tenant_id)
         elif route == "summarize":
-            result = self._summarizer_agent(query, top_k, trace)
+            result = self._summarizer_agent(query, top_k, trace, tenant_id)
         else:
-            result = self._qa_agent(query, top_k, trace)
+            result = self._qa_agent(query, top_k, trace, tenant_id)
 
         return {"route": route, "result": result, "trace": trace}
 
@@ -107,14 +110,14 @@ class AgentOrchestrator:
 
     # --- Specialist agents ---
 
-    def _qa_agent(self, query, top_k, trace):
+    def _qa_agent(self, query, top_k, trace, tenant_id=config.DEFAULT_TENANT_ID):
         trace.append({"step": "qa_agent", "action": "delegating to RAG pipeline"})
         if self.qa is None:
             raise RuntimeError("QA agent is not configured")
-        return self.qa.ask_question(query, top_k=top_k)
+        return self.qa.ask_question(query, top_k=top_k, tenant_id=tenant_id)
 
-    def _extraction_agent(self, query, top_k, trace):
-        chunks = self._retrieve(query, top_k)
+    def _extraction_agent(self, query, top_k, trace, tenant_id=config.DEFAULT_TENANT_ID):
+        chunks = self._retrieve(query, top_k, tenant_id)
         trace.append({"step": "extraction_agent", "chunks_retrieved": len(chunks)})
         if not chunks:
             return {"error": "insufficient_evidence"}
@@ -137,19 +140,22 @@ class AgentOrchestrator:
             return {"error": "extraction_evidence_validation_failed"}
         return {"data": data, "evidence": evidence}
 
-    def _summarizer_agent(self, query, top_k, trace):
+    def _summarizer_agent(self, query, top_k, trace, tenant_id=config.DEFAULT_TENANT_ID):
         if self.qa is None:
             raise RuntimeError("QA agent is not configured")
-        result = self.qa.ask_question(query, top_k=top_k)
+        result = self.qa.ask_question(query, top_k=top_k, tenant_id=tenant_id)
         trace.append({"step": "summarizer_agent", "chunks_retrieved": result["retrieved_chunks"]})
         return result
 
     # --- Helpers ---
 
-    def _retrieve(self, query, top_k):
+    def _retrieve(self, query, top_k, tenant_id=config.DEFAULT_TENANT_ID):
         if self.store is None:
             raise RuntimeError("Vector store is not configured")
-        results = self.store.search(query, top_k=top_k)
+        tenant_id = self.qa.normalize_tenant_id(tenant_id) if self.qa else tenant_id
+        results = self.store.search(
+            query, top_k=top_k, filter_metadata={"tenant_id": tenant_id}
+        )
         return results
 
     @staticmethod
