@@ -1,7 +1,12 @@
 [
-  {"question": "What is the patient's blood type?"},
-  {"question": "What surgeries has the patient had in the past?"},
-  {"question": "What is the patient's insurance provider?"},
-  {"question": "Does the patient smoke or drink alcohol?"},
-  {"question": "What were the results of the patient's colonoscopy?"}
+  {"question": "What is the patient's blood type?", "expected_answerable": false},
+  {"question": "What surgeries has the patient had in the past?", "expected_answerable": false},
+  {"question": "What is the patient's insurance provider?", "expected_answerable": false},
+  {"question": "Does the patient smoke or drink alcohol?", "expected_answerable": false},
+  {"question": "What were the results of the patient's colonoscopy?", "expected_answerable": false},
+  {"question": "What is the primary diagnosis?", "expected_answerable": true},
+  {"question": "What medications were prescribed?", "expected_answerable": true},
+  {"question": "What are the patient's work restrictions?", "expected_answerable": true},
+  {"question": "How did the patient respond to treatment?", "expected_answerable": true},
+  {"question": "When did the follow-up visit occur?", "expected_answerable": true}
 ]

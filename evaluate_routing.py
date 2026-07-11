@@ -8,12 +8,14 @@ Usage: python evaluate_routing.py
 import json
 from collections import defaultdict
 
-from agents import AgentOrchestrator, ROUTER_PROMPT
+from agents import AgentOrchestrator
 
 
 def evaluate(cases_path: str = "routing_cases.json") -> dict:
     with open(cases_path) as f:
         cases = json.load(f)
+    if not cases:
+        raise ValueError("Routing evaluation set must not be empty")
 
     # Router-only harness: reuse the orchestrator's LLM + parse helpers
     # without touching the vector store or agents.
@@ -24,8 +26,7 @@ def evaluate(cases_path: str = "routing_cases.json") -> dict:
 
     for case in cases:
         query, expected = case["query"], case["expected_route"]
-        raw = orch._llm(ROUTER_PROMPT, query)
-        parsed = orch._parse_json(raw, default={"route": "qa", "reason": "parse_fallback"})
+        parsed = orch.classify_route(query)
         predicted = parsed.get("route", "qa")
 
         per_route[expected]["total"] += 1

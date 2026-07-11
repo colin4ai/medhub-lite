@@ -2,8 +2,8 @@
 Vector store module using ChromaDB for storing and retrieving document chunks.
 """
 from typing import List, Dict, Optional
+import re
 import chromadb
-from chromadb.config import Settings
 import config
 from embeddings import EmbeddingGenerator
 
@@ -16,22 +16,15 @@ class VectorStore:
         self.collection_name = collection_name
         self.persist_directory = persist_directory
         
-        # Initialize ChromaDB client
-        self.client = chromadb.Client(Settings(
-            persist_directory=persist_directory,
-            anonymized_telemetry=False
-        ))
+        # PersistentClient is explicit: data survives API/CLI process restarts.
+        self.client = chromadb.PersistentClient(path=persist_directory)
         
-        # Get or create collection
-        try:
-            self.collection = self.client.get_collection(name=collection_name)
-            print(f"Loaded existing collection: {collection_name}")
-        except:
-            self.collection = self.client.create_collection(
-                name=collection_name,
-                metadata={"description": "Medical document chunks for Q&A"}
-            )
-            print(f"Created new collection: {collection_name}")
+        # Atomic and compatible across Chroma versions; avoids broad exception
+        # handling around differing NotFoundError implementations.
+        self.collection = self.client.get_or_create_collection(
+            name=collection_name,
+            metadata={"description": "Medical document chunks for Q&A"},
+        )
         
         self.embedding_generator = EmbeddingGenerator()
     
@@ -57,8 +50,8 @@ class VectorStore:
         print("Generating embeddings...")
         embeddings = self.embedding_generator.generate_embeddings_batch(documents)
         
-        # Add to collection
-        self.collection.add(
+        # Upsert makes re-ingestion idempotent for deterministic chunk IDs.
+        self.collection.upsert(
             documents=documents,
             embeddings=embeddings,
             ids=ids,
@@ -80,28 +73,77 @@ class VectorStore:
         Returns:
             List of relevant chunks with their content and metadata
         """
-        # Generate query embedding
+        collection_size = self.collection.count()
+        if collection_size == 0:
+            return []
+
+        # Generate a broader semantic candidate set, then rerank it using both
+        # vector similarity and exact domain-term overlap.
         query_embedding = self.embedding_generator.generate_embedding(query)
+        candidate_k = min(
+            collection_size,
+            max(top_k, top_k * config.RETRIEVAL_CANDIDATE_MULTIPLIER),
+        )
         
         # Search in ChromaDB
         results = self.collection.query(
             query_embeddings=[query_embedding],
-            n_results=top_k,
+            n_results=candidate_k,
             where=filter_metadata
         )
         
-        # Format results
+        # Chroma's default collection returns L2 distance (lower is better).
+        # Convert it to an intuitive 0..1 score and reject weak evidence.
         formatted_results = []
         if results['documents'] and results['documents'][0]:
             for i in range(len(results['documents'][0])):
+                distance = results['distances'][0][i] if 'distances' in results else None
+                similarity = 1.0 / (1.0 + distance) if distance is not None else 0.0
+                if similarity < config.SIMILARITY_THRESHOLD:
+                    continue
+                lexical_score = self._lexical_score(query, results['documents'][0][i])
+                hybrid_score = (
+                    config.VECTOR_SCORE_WEIGHT * similarity
+                    + (1 - config.VECTOR_SCORE_WEIGHT) * lexical_score
+                )
                 formatted_results.append({
                     'content': results['documents'][0][i],
                     'metadata': results['metadatas'][0][i],
-                    'distance': results['distances'][0][i] if 'distances' in results else None,
+                    'distance': distance,
+                    'similarity': similarity,
+                    'lexical_score': lexical_score,
+                    'hybrid_score': hybrid_score,
                     'chunk_id': results['ids'][0][i]
                 })
         
-        return formatted_results
+        formatted_results.sort(key=lambda item: item['hybrid_score'], reverse=True)
+        return formatted_results[:top_k]
+
+    @staticmethod
+    def _lexical_score(query: str, document: str) -> float:
+        stop_words = {
+            "a", "an", "and", "are", "did", "do", "does", "for", "had", "has",
+            "have", "in", "is", "of", "the", "to", "was", "were", "what", "when",
+            "with", "patient", "patients", "currently",
+        }
+        def stem(token: str) -> str:
+            if token.endswith("ies") and len(token) > 4:
+                return token[:-3] + "y"
+            if token.endswith("ing") and len(token) > 5:
+                return token[:-3]
+            if token.endswith("s") and len(token) > 3:
+                return token[:-1]
+            return token
+
+        def tokenize(text: str):
+            return {
+                stem(token) for token in re.findall(r"[a-z0-9]+", text.lower())
+                if token not in stop_words and len(token) > 1
+            }
+        query_terms = tokenize(query)
+        if not query_terms:
+            return 0.0
+        return len(query_terms.intersection(tokenize(document))) / len(query_terms)
     
     def get_chunk_by_id(self, chunk_id: str) -> Optional[Dict]:
         """
@@ -121,7 +163,7 @@ class VectorStore:
                     'metadata': result['metadatas'][0],
                     'chunk_id': result['ids'][0]
                 }
-        except:
+        except (ValueError, IndexError, KeyError):
             return None
         return None
     

@@ -5,6 +5,10 @@ Run this after setup to ensure everything is configured correctly.
 import sys
 import os
 
+# This file is an interactive setup diagnostic rather than an assertion-based
+# pytest suite. Keep pytest focused on the real regression tests.
+__test__ = False
+
 def test_imports():
     """Test that all required packages can be imported"""
     print("Testing imports...")

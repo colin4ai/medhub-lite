@@ -4,8 +4,9 @@ Provides REST API endpoints for document management and Q&A.
 """
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from typing import Optional, List
+from starlette.concurrency import run_in_threadpool
+from pydantic import BaseModel, Field
+from typing import Dict, Optional, List
 from agents import AgentOrchestrator
 import tempfile
 import os
@@ -28,8 +29,8 @@ orchestrator = AgentOrchestrator(qa_system, qa_system.vector_store)
 
 # Request/Response models
 class QuestionRequest(BaseModel):
-    question: str
-    top_k: Optional[int] = 5
+    question: str = Field(min_length=1, max_length=config.MAX_QUERY_LENGTH)
+    top_k: int = Field(default=5, ge=1, le=config.MAX_TOP_K)
 
 
 class QuestionResponse(BaseModel):
@@ -37,6 +38,13 @@ class QuestionResponse(BaseModel):
     sources: List[dict]
     num_sources: int
     confidence: str
+    answerable: bool
+    retrieved_chunks: int
+    cited_source_numbers: List[int] = Field(default_factory=list)
+    top_similarity: Optional[float] = None
+    claim_evidence: List[dict] = Field(default_factory=list)
+    token_usage: Dict[str, int] = Field(default_factory=dict)
+    latency_ms: Dict[str, float] = Field(default_factory=dict)
 
 
 class DocumentSummaryResponse(BaseModel):
@@ -47,8 +55,8 @@ class DocumentSummaryResponse(BaseModel):
 
 
 class AgentRequest(BaseModel):
-    query: str
-    top_k: Optional[int] = 5
+    query: str = Field(min_length=1, max_length=config.MAX_QUERY_LENGTH)
+    top_k: int = Field(default=5, ge=1, le=config.MAX_TOP_K)
 
 
 # API Endpoints
@@ -62,6 +70,7 @@ async def root():
         "endpoints": {
             "POST /upload": "Upload a medical document",
             "POST /ask": "Ask a question about documents",
+            "POST /agent": "Route a grounded Q&A, extraction, or summary task",
             "GET /documents/{doc_id}": "Get document summary",
             "GET /timeline": "Get medical timeline",
             "GET /stats": "Get system statistics",
@@ -88,11 +97,14 @@ async def upload_document(file: UploadFile = File(...)):
             tmp_file.write(content)
             tmp_path = tmp_file.name
         
-        # Process document
-        document = qa_system.add_document(tmp_path)
-        
-        # Clean up temp file
-        os.unlink(tmp_path)
+        try:
+            # Embedding, parsing, and LLM SDK calls are blocking operations.
+            document = await run_in_threadpool(
+                qa_system.add_document, tmp_path, file.filename
+            )
+        finally:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
         
         return {
             "status": "success",
@@ -121,9 +133,8 @@ async def ask_question(request: QuestionRequest):
         Answer with sources and citations
     """
     try:
-        result = qa_system.ask_question(
-            question=request.question,
-            top_k=request.top_k
+        result = await run_in_threadpool(
+            qa_system.ask_question, request.question, request.top_k
         )
         return result
     
@@ -132,10 +143,10 @@ async def ask_question(request: QuestionRequest):
 
 
 @app.post("/agent")
-def agent_query(request: AgentRequest):
+async def agent_query(request: AgentRequest):
     """Multi-agent endpoint: routes to QA, extraction, or summarization agent."""
     try:
-        return orchestrator.run(request.query, request.top_k)
+        return await run_in_threadpool(orchestrator.run, request.query, request.top_k)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

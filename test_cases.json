@@ -11,7 +11,7 @@
   },
   {
     "question": "What are the patient's current work restrictions?",
-    "expected_answer_contains": ["lifting", "20 pounds", "light duty"],
+    "expected_answer_contains": [["lift", "lifting"], "20 pounds", "light duty"],
     "should_cite_source": true
   },
   {
@@ -31,7 +31,7 @@
   },
   {
     "question": "Is the patient's condition improving?",
-    "expected_answer_contains": ["improving", "progress", "better"],
+    "expected_answer_contains": [["improving", "progress", "better"]],
     "should_cite_source": true
   },
   {

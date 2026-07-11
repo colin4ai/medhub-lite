@@ -171,13 +171,19 @@ boundary cases (field-related questions, softly-phrased commands).
 | Router prompt | Accuracy | QA | Extract | Summarize |
 |---|---|---|---|---|
 | Original (zero-shot) | 71.0% | 2/11 | 10/10 | 10/10 |
-| Current (few-shot + decision rule) | **100%** | 11/11 | 10/10 | 10/10 |
+| Current (few-shot + decision rule, development set) | **100%** | 11/11 | 10/10 | 10/10 |
 
 **Failure mode found:** the original prompt systematically misrouted field-related
 questions ("What medications is the patient taking?") to extraction — the extract route's
 description mentioned patient fields, so any question naming a field was classified as an
 extraction command. **Fix:** few-shot examples per route plus an explicit decision rule
 (questions about content → qa; commands to produce structured records → extract).
+
+Because these examples informed prompt tuning, 100% is development-set accuracy rather
+than an estimate of production generalization. `routing_regression_cases.json` contains
+additional boundary cases found during testing. Because its misses were also used to add
+deterministic safety and output-format rules, it is a regression set, not an unbiased
+holdout. A new frozen set is required before estimating production generalization.
 
 ```bash
 python evaluate_routing.py
@@ -198,6 +204,36 @@ Labeled Q&A cases checking factual content and source citations (`test_cases.jso
 ```bash
 python main.py evaluate --test-set test_cases.json
 ```
+
+### Answerability and hallucination controls
+
+The answerability set mixes questions supported by the corpus with deliberately
+unanswerable questions. This catches both hallucinations and systems that obtain a high
+refusal score by refusing everything.
+
+```bash
+python evaluate_refusal.py
+```
+
+The runtime also filters retrieval below `SIMILARITY_THRESHOLD`, requires structured
+answerability plus exact quoted source spans for every claim, and converts invalid or
+unsupported answers into an explicit abstention. Structured extraction applies the same
+rule to every populated field. These controls reduce risk but do not replace
+expert review or claim-level entailment evaluation for consequential use cases.
+
+### Retrieval quality
+
+The retrieval benchmark labels relevant chunk IDs and reports Recall@K and mean
+reciprocal rank independently of answer generation. Retrieval expands the semantic
+candidate pool, applies the calibrated similarity floor, and reranks candidates using a
+weighted combination of vector similarity and domain-term overlap.
+
+```bash
+python evaluate_retrieval.py
+```
+
+Q&A responses also expose retrieval, generation, and total latency plus prompt and
+completion token counts for cost and performance monitoring.
 
 ### Refusal correctness — hallucination prevention
 

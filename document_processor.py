@@ -5,7 +5,7 @@ Handles PDF/text ingestion, chunking, and metadata extraction.
 import re
 from typing import List, Dict, Optional
 from datetime import datetime
-import PyPDF2
+import pypdf
 import pdfplumber
 from pathlib import Path
 import tiktoken
@@ -62,7 +62,7 @@ class DocumentProcessor:
             # Fallback to PyPDF2
             try:
                 with open(file_path, 'rb') as file:
-                    pdf_reader = PyPDF2.PdfReader(file)
+                    pdf_reader = pypdf.PdfReader(file)
                     num_pages = len(pdf_reader.pages)
                     for page in pdf_reader.pages:
                         full_text += page.extract_text() + "\n\n"

@@ -1,0 +1,43 @@
+{
+  "run_date": "2026-07-10",
+  "code_version_note": "Historical baseline before exact-quote claim validation and hybrid reranking; rerun required for the current pipeline.",
+  "model": "gpt-4o-mini",
+  "embedding_model": "text-embedding-3-small",
+  "similarity_threshold": 0.425,
+  "results": {
+    "rag_qa": {
+      "correct": 8,
+      "total": 8,
+      "accuracy": 1.0,
+      "valid_citations": 8,
+      "citation_rate": 1.0
+    },
+    "answerability": {
+      "correct": 10,
+      "total": 10,
+      "accuracy": 1.0,
+      "correct_refusal_rate": 1.0,
+      "answerable_recall": 1.0
+    },
+    "routing_development": {
+      "correct": 31,
+      "total": 31,
+      "accuracy": 1.0
+    },
+    "routing_regression": {
+      "correct": 12,
+      "total": 12,
+      "accuracy": 1.0
+    },
+    "offline_tests": {
+      "passed": 9,
+      "failed": 0
+    }
+  },
+  "limitations": [
+    "The labeled sets are small and synthetic.",
+    "Development and regression sets were used during tuning and are not unbiased holdouts.",
+    "Keyword answer checks do not replace expert or claim-level entailment evaluation.",
+    "The retrieval threshold must be recalibrated when the corpus or embedding model changes."
+  ]
+}
